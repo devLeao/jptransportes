@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import Image from 'next/image';
 
@@ -424,11 +424,8 @@ function FleetCarousel() {
 
 export default function Home() {
   const pageRef = useRef<HTMLDivElement | null>(null);
-  const countStartedRef = useRef(false);
-  const countAnimationRef = useRef<number | null>(null);
   const [activeService, setActiveService] = useState(0);
   const [activePhoto, setActivePhoto] = useState(0);
-  const [travelCount, setTravelCount] = useState(0);
 
   const currentService = useMemo(() => services[activeService], [activeService]);
   const currentServicePhoto = currentService.photos[activePhoto] ?? currentService.photos[0];
@@ -436,38 +433,6 @@ export default function Home() {
     currentServicePhoto.endsWith('.mp4') ||
     currentServicePhoto.endsWith('.webm') ||
     currentServicePhoto.endsWith('.ogg');
-  const travelCountLabel = `+${travelCount.toLocaleString('pt-BR')}`;
-
-  const animateTravelCount = useCallback(() => {
-    if (countAnimationRef.current) {
-      cancelAnimationFrame(countAnimationRef.current);
-    }
-
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (reducedMotion) {
-      setTravelCount(10000);
-      return;
-    }
-
-    setTravelCount(0);
-
-    const start = performance.now();
-    const duration = 4200;
-
-    const animateCount = (time: number) => {
-      const progress = Math.min((time - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 4);
-
-      setTravelCount(Math.round(eased * 10000));
-
-      if (progress < 1) {
-        countAnimationRef.current = requestAnimationFrame(animateCount);
-      }
-    };
-
-    countAnimationRef.current = requestAnimationFrame(animateCount);
-  }, []);
 
   useEffect(() => {
     if (!pageRef.current) return;
@@ -481,11 +446,6 @@ export default function Home() {
 
           entry.target.classList.add('is-visible');
 
-          if (entry.target.id === 'sobre' && !countStartedRef.current) {
-            countStartedRef.current = true;
-            animateTravelCount();
-          }
-
           observer.unobserve(entry.target);
         });
       },
@@ -496,12 +456,8 @@ export default function Home() {
 
     return () => {
       observer.disconnect();
-
-      if (countAnimationRef.current) {
-        cancelAnimationFrame(countAnimationRef.current);
-      }
     };
-  }, [animateTravelCount]);
+  }, []);
 
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -659,92 +615,6 @@ export default function Home() {
                 </span>
                 Ver frota
               </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="sobre"
-        className="section-reveal relative bg-white py-14 dark:bg-zinc-950 md:py-20"
-      >
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="reveal-item grid grid-cols-1 gap-8 border-y border-zinc-200 py-10 dark:border-zinc-800 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
-            <div>
-              <h2 className="mb-4 text-sm font-black uppercase tracking-[0.3em] text-red-700">
-                Sobre nós
-              </h2>
-              <h3 className="text-2xl font-black uppercase leading-tight tracking-tight text-zinc-900 dark:text-white md:text-3xl">
-                Estrada, experiência e atendimento direto.
-              </h3>
-            </div>
-
-            <div>
-              <p className="max-w-3xl text-sm font-medium leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-base">
-                Desde 2013, a JP Transportes e Viagens opera nas estradas com foco em
-                segurança, pontualidade e conforto. São mais de 10 mil viagens realizadas
-                em serviços de fretamento, excursões, eventos, transfers e transporte
-                executivo para clientes de BH, Vespasiano e região.
-              </p>
-
-              <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="about-stat relative border-t border-zinc-200 pt-4 dark:border-zinc-800">
-                  <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
-                    Desde 2013
-                  </strong>
-                  <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
-                    Operando nas estradas
-                  </span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={animateTravelCount}
-                  onMouseEnter={animateTravelCount}
-                  onFocus={animateTravelCount}
-                  className="about-stat about-trip-counter group relative overflow-hidden rounded-2xl border border-red-700/25 bg-red-700/[0.04] p-5 text-left outline-none transition-colors hover:border-red-700/60 focus-visible:ring-2 focus-visible:ring-red-700 dark:bg-red-700/[0.08]"
-                  aria-label="Mais de dez mil viagens feitas"
-                >
-                  <span className="about-stat-line" />
-                  <strong className="block min-h-[2.35rem] font-mono text-3xl font-black tracking-tight text-zinc-950 tabular-nums dark:text-white">
-                    {travelCountLabel}
-                  </strong>
-                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-red-700">
-                    Viagens feitas
-                  </span>
-                  <span className="mt-5 block h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
-                    <span
-                      className="block h-full rounded-full bg-red-700 transition-[width] duration-300"
-                      style={{ width: `${Math.min(100, travelCount / 100)}%` }}
-                    />
-                  </span>
-                </button>
-
-                <div className="about-stat relative border-t border-zinc-200 pt-4 dark:border-zinc-800">
-                  <div className="mb-3 flex h-10 w-10 items-center justify-center text-red-700">
-                    <svg
-                      viewBox="0 0 64 64"
-                      aria-hidden="true"
-                      className="h-10 w-10"
-                      fill="none"
-                    >
-                      <path
-                        d="M15 23.5 24.5 15l8 3 5.5-4.5 8 6.5 7.5 1.5-2 8.5 4 7-7 4.5-1.5 8.5-10.5-1-5.5 5.5-8-4-8.5.5-3.5-8.5-7-5 5-7.5z"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinejoin="round"
-                      />
-                      <circle cx="33" cy="33" r="4" fill="currentColor" />
-                    </svg>
-                  </div>
-                  <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
-                    BH e região
-                  </strong>
-                  <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
-                    Minas Gerais
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
