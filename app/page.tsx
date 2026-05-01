@@ -485,7 +485,7 @@ export default function Home() {
     >
       <section
         id="inicio"
-        className="relative min-h-[100svh] md:min-h-screen overflow-hidden flex items-center pt-20 md:pt-20"
+        className="relative min-h-[calc(100svh-5rem)] md:min-h-[calc(100vh-5rem)] overflow-hidden flex items-start md:items-center"
       >
         <video
           className="absolute inset-0 h-full w-full object-cover"
@@ -507,13 +507,13 @@ export default function Home() {
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 relative z-10 w-full">
-          <div className="max-w-4xl mx-auto text-center py-4 md:py-10">
+          <div className="max-w-4xl mx-auto text-center pt-10 pb-10 sm:pt-12 md:py-10 md:-translate-y-8 lg:-translate-y-12">
             <div className="hero-animate flex items-center justify-center gap-3 mb-4 md:mb-5">
-              <div className="w-8 md:w-12 h-[3px] bg-red-700" />
-              <span className="text-red-300 dark:text-red-400 text-[10px] md:text-[11px] font-black uppercase tracking-[0.35em]">
+              <div className="w-9 md:w-12 h-[3px] bg-red-700" />
+              <span className="text-red-300 dark:text-red-400 text-[10px] md:text-[11px] font-black uppercase tracking-[0.32em]">
                 BH & Região
               </span>
-              <div className="w-8 md:w-12 h-[3px] bg-red-700" />
+              <div className="w-9 md:w-12 h-[3px] bg-red-700" />
             </div>
 
             <Image
@@ -522,10 +522,10 @@ export default function Home() {
               width={155}
               height={63}
               priority
-              className="hero-animate mx-auto w-[92px] sm:w-[110px] md:w-[155px] object-contain drop-shadow-[0_12px_30px_rgba(0,0,0,0.35)] mb-4 md:mb-6"
+              className="hero-animate mx-auto w-[98px] sm:w-[112px] md:w-[155px] object-contain drop-shadow-[0_12px_30px_rgba(0,0,0,0.35)] mb-4 md:mb-6"
             />
 
-            <h1 className="hero-animate text-[2rem] leading-[0.9] sm:text-5xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter">
+            <h1 className="hero-animate text-[clamp(2.55rem,11.4vw,4rem)] leading-[0.88] sm:text-5xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter">
               Transporte,
               <br />
               conforto e
@@ -535,15 +535,15 @@ export default function Home() {
               </span>
             </h1>
 
-            <p className="hero-animate text-white/80 text-[13px] sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-medium mt-4 md:mt-6">
+            <p className="hero-animate text-white/85 text-[15px] sm:text-base md:text-lg max-w-[34rem] md:max-w-2xl mx-auto leading-relaxed font-semibold md:font-medium mt-4 md:mt-6">
               Soluções em viagens, fretamento, transfers, eventos e transporte executivo
               com a experiência que a JP entrega em cada trajeto.
             </p>
 
-            <div className="hero-animate flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-3 md:gap-5 pt-5 md:pt-7">
+            <div className="hero-animate flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-3 md:gap-5 pt-6 md:pt-7">
               <a
                 href="#contato"
-                className="w-full sm:w-auto inline-flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold px-7 py-3.5 md:px-10 md:py-5 rounded-xl md:rounded-sm transition-all shadow-2xl shadow-red-900/40 uppercase text-[11px] tracking-widest active:scale-95"
+                className="w-[min(88%,320px)] sm:w-auto inline-flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold px-7 py-3.5 md:px-10 md:py-5 rounded-xl md:rounded-sm transition-all shadow-2xl shadow-red-900/40 uppercase text-[10px] md:text-[11px] tracking-widest active:scale-95"
               >
                 Solicitar orçamento
               </a>
