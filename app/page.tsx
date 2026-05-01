@@ -424,8 +424,12 @@ function FleetCarousel() {
 
 export default function Home() {
   const pageRef = useRef<HTMLDivElement | null>(null);
+  const countStartedRef = useRef(false);
+  const countAnimationRef = useRef<number | null>(null);
   const [activeService, setActiveService] = useState(0);
   const [activePhoto, setActivePhoto] = useState(0);
+  const [yearCount, setYearCount] = useState(2000);
+  const [travelCount, setTravelCount] = useState(0);
 
   const currentService = useMemo(() => services[activeService], [activeService]);
   const currentServicePhoto = currentService.photos[activePhoto] ?? currentService.photos[0];
@@ -433,6 +437,8 @@ export default function Home() {
     currentServicePhoto.endsWith('.mp4') ||
     currentServicePhoto.endsWith('.webm') ||
     currentServicePhoto.endsWith('.ogg');
+  const travelCountLabel =
+    travelCount >= 10000 ? '+10 mil' : `+${travelCount.toLocaleString('pt-BR')}`;
 
   useEffect(() => {
     if (!pageRef.current) return;
@@ -445,6 +451,35 @@ export default function Home() {
           if (!entry.isIntersecting) return;
 
           entry.target.classList.add('is-visible');
+
+          if (entry.target.id === 'sobre' && !countStartedRef.current) {
+            countStartedRef.current = true;
+
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (reducedMotion) {
+              setYearCount(2013);
+              setTravelCount(10000);
+            } else {
+              const start = performance.now() + 250;
+              const duration = 2600;
+
+              const animateCount = (time: number) => {
+                const progress = Math.min(Math.max((time - start) / duration, 0), 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                setYearCount(Math.round(2000 + eased * 13));
+                setTravelCount(Math.round(eased * 10000));
+
+                if (progress < 1) {
+                  countAnimationRef.current = requestAnimationFrame(animateCount);
+                }
+              };
+
+              countAnimationRef.current = requestAnimationFrame(animateCount);
+            }
+          }
+
           observer.unobserve(entry.target);
         });
       },
@@ -455,6 +490,10 @@ export default function Home() {
 
     return () => {
       observer.disconnect();
+
+      if (countAnimationRef.current) {
+        cancelAnimationFrame(countAnimationRef.current);
+      }
     };
   }, []);
 
@@ -485,7 +524,7 @@ export default function Home() {
     >
       <section
         id="inicio"
-        className="relative min-h-[calc(100svh-5rem)] md:min-h-[calc(100vh-5rem)] overflow-hidden flex items-start md:items-center"
+        className="relative min-h-[calc(92svh-5rem)] md:min-h-[calc(100vh-5rem)] overflow-hidden flex items-start md:items-center"
       >
         <video
           className="absolute inset-0 h-full w-full object-cover"
@@ -507,7 +546,7 @@ export default function Home() {
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 relative z-10 w-full">
-          <div className="max-w-4xl mx-auto text-center pt-10 pb-10 sm:pt-12 md:py-10 md:-translate-y-8 lg:-translate-y-12">
+          <div className="max-w-4xl mx-auto text-center pt-16 pb-10 sm:pt-20 md:py-10 md:-translate-y-2 lg:-translate-y-4">
             <div className="hero-animate flex items-center justify-center gap-3 mb-4 md:mb-5">
               <div className="w-9 md:w-12 h-[3px] bg-red-700" />
               <span className="text-red-300 dark:text-red-400 text-[10px] md:text-[11px] font-black uppercase tracking-[0.32em]">
@@ -586,25 +625,31 @@ export default function Home() {
               </p>
 
               <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-                  <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
-                    2013
+                <div className="about-stat relative overflow-hidden border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <span className="about-stat-line" />
+                  <strong className="block font-mono text-2xl font-black tracking-tight text-zinc-950 tabular-nums dark:text-white">
+                    {yearCount}
                   </strong>
                   <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
                     Desde
                   </span>
                 </div>
 
-                <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-                  <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
-                    +10 mil
+                <div className="about-stat relative overflow-hidden border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <span className="about-stat-line about-stat-line-delay-1" />
+                  <strong
+                    className="block font-mono text-2xl font-black tracking-tight text-zinc-950 tabular-nums transition-colors duration-300 dark:text-white"
+                    aria-label="Mais de 10 mil viagens feitas"
+                  >
+                    {travelCountLabel}
                   </strong>
                   <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
                     Viagens feitas
                   </span>
                 </div>
 
-                <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                <div className="about-stat relative overflow-hidden border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <span className="about-stat-line about-stat-line-delay-2" />
                   <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
                     BH e região
                   </strong>
@@ -996,16 +1041,16 @@ export default function Home() {
 
       <footer className="bg-zinc-950 text-white border-t border-white/10">
         <div className="container mx-auto px-4 sm:px-6 py-12 md:py-14">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            <div>
+          <div className="grid grid-cols-1 gap-10 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-4">
+            <div className="flex flex-col items-center sm:items-start">
               <Image
                 src="/logobranca.png"
                 alt="JP Transportes e Viagens"
                 width={98}
                 height={40}
-                className="h-10 w-auto object-contain mb-5"
+                className="mb-5 h-10 w-auto object-contain"
               />
-              <p className="text-sm leading-relaxed text-white/65 max-w-xs">
+              <p className="max-w-xs text-sm leading-relaxed text-white/65">
                 Transporte, fretamento e viagens com conforto, segurança e profissionalismo.
               </p>
             </div>
@@ -1048,7 +1093,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-white/10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="mt-10 flex flex-col items-center gap-3 border-t border-white/10 pt-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
             <p className="text-[11px] md:text-xs uppercase tracking-[0.18em] text-white/60 leading-relaxed">
               © 2026 JP Transportes e Viagens. Todos os direitos reservados.
             </p>
