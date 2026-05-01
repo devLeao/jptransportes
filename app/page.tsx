@@ -462,7 +462,7 @@ export default function Home() {
               setTravelCount(10000);
             } else {
               const start = performance.now() + 250;
-              const duration = 2600;
+              const duration = 3600;
 
               const animateCount = (time: number) => {
                 const progress = Math.min(Math.max((time - start) / duration, 0), 1);
@@ -493,6 +493,63 @@ export default function Home() {
 
       if (countAnimationRef.current) {
         cancelAnimationFrame(countAnimationRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const touchPrimary = window.matchMedia('(pointer: coarse)').matches;
+
+    if (reducedMotion || touchPrimary) return;
+
+    let currentY = window.scrollY;
+    let targetY = window.scrollY;
+    let animationFrame = 0;
+
+    const maxScroll = () =>
+      Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+    const syncScrollPosition = () => {
+      if (!animationFrame) {
+        currentY = window.scrollY;
+        targetY = window.scrollY;
+      }
+    };
+
+    const animateScroll = () => {
+      currentY += (targetY - currentY) * 0.075;
+      window.scrollTo(0, currentY);
+
+      if (Math.abs(targetY - currentY) > 0.4) {
+        animationFrame = requestAnimationFrame(animateScroll);
+      } else {
+        currentY = targetY;
+        animationFrame = 0;
+      }
+    };
+
+    const handleWheel = (event: WheelEvent) => {
+      if (event.ctrlKey) return;
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+      event.preventDefault();
+      targetY = Math.min(maxScroll(), Math.max(0, targetY + event.deltaY * 0.68));
+
+      if (!animationFrame) {
+        animationFrame = requestAnimationFrame(animateScroll);
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('scroll', syncScrollPosition, { passive: true });
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('scroll', syncScrollPosition);
+
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
       }
     };
   }, []);
@@ -625,37 +682,55 @@ export default function Home() {
               </p>
 
               <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="about-stat relative overflow-hidden border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                <div className="about-stat relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-white/[0.03]">
                   <span className="about-stat-line" />
-                  <strong className="block font-mono text-2xl font-black tracking-tight text-zinc-950 tabular-nums dark:text-white">
+                  <span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-700/20 bg-red-700/10 text-[11px] font-black text-red-700">
+                    01
+                  </span>
+                  <strong className="block font-mono text-3xl font-black tracking-tight text-zinc-950 tabular-nums dark:text-white">
                     {yearCount}
                   </strong>
-                  <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
+                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
                     Desde
                   </span>
+                  <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
+                    <span className="about-progress about-progress-1" />
+                  </div>
                 </div>
 
-                <div className="about-stat relative overflow-hidden border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                <div className="about-stat relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-white/[0.03]">
                   <span className="about-stat-line about-stat-line-delay-1" />
+                  <span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-700/20 bg-red-700/10 text-[11px] font-black text-red-700">
+                    02
+                  </span>
                   <strong
-                    className="block font-mono text-2xl font-black tracking-tight text-zinc-950 tabular-nums transition-colors duration-300 dark:text-white"
+                    className="block font-mono text-3xl font-black tracking-tight text-zinc-950 tabular-nums transition-colors duration-300 dark:text-white"
                     aria-label="Mais de 10 mil viagens feitas"
                   >
                     {travelCountLabel}
                   </strong>
-                  <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
+                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
                     Viagens feitas
                   </span>
+                  <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
+                    <span className="about-progress about-progress-2" />
+                  </div>
                 </div>
 
-                <div className="about-stat relative overflow-hidden border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                <div className="about-stat relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-white/[0.03]">
                   <span className="about-stat-line about-stat-line-delay-2" />
-                  <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
+                  <span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-700/20 bg-red-700/10 text-[11px] font-black text-red-700">
+                    03
+                  </span>
+                  <strong className="block text-3xl font-black tracking-tight text-zinc-950 dark:text-white">
                     BH e região
                   </strong>
-                  <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
+                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
                     Atendimento
                   </span>
+                  <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
+                    <span className="about-progress about-progress-3" />
+                  </div>
                 </div>
               </div>
             </div>

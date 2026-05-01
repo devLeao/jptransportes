@@ -80,23 +80,38 @@ html {
 }
 
 .about-stat {
-  transform: translateY(8px);
-  transition: transform 0.7s ease;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.75s ease, transform 0.75s ease, border-color 0.4s ease,
+    background-color 0.4s ease;
 }
 
 .section-reveal.is-visible .about-stat {
+  opacity: 1;
   transform: translateY(0);
+}
+
+.section-reveal.is-visible .about-stat:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.section-reveal.is-visible .about-stat:nth-child(3) {
+  transition-delay: 0.24s;
+}
+
+.section-reveal.is-visible .about-stat:hover {
+  border-color: rgba(185, 28, 28, 0.45);
 }
 
 .about-stat-line {
   position: absolute;
-  top: -1px;
+  top: 0;
   left: 0;
   display: block;
   width: 0;
-  height: 1px;
+  height: 2px;
   background: #b91c1c;
-  transition: width 1.8s ease;
+  transition: width 2s ease;
 }
 
 .about-stat-line-delay-1 {
@@ -109,6 +124,35 @@ html {
 
 .section-reveal.is-visible .about-stat-line {
   width: 100%;
+}
+
+.about-progress {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #b91c1c, #ef4444);
+  transition: width 2.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about-progress-2 {
+  transition-delay: 0.18s;
+}
+
+.about-progress-3 {
+  transition-delay: 0.32s;
+}
+
+.section-reveal.is-visible .about-progress-1 {
+  width: 72%;
+}
+
+.section-reveal.is-visible .about-progress-2 {
+  width: 100%;
+}
+
+.section-reveal.is-visible .about-progress-3 {
+  width: 84%;
 }
 
 @keyframes hero-reveal {
