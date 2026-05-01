@@ -1,17 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTheme } from 'next-themes';
+import { useTheme } from './providers';
+import Image from 'next/image';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -26,17 +22,19 @@ export default function Navbar() {
 
   const closeMenu = () => setMenuOpen(false);
 
-  const logoSrc =
-    mounted && theme === 'dark' ? '/logobranca.png' : '/logopreta.png';
+  const logoSrc = theme === 'dark' ? '/logobranca.png' : '/logopreta.png';
 
   return (
     <>
       <nav className="fixed top-0 left-0 w-full z-[200] border-b transition-all duration-300 bg-white/95 backdrop-blur-md border-zinc-200 dark:bg-black/95 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex justify-between items-center relative">
           <a href="#inicio" className="flex-shrink-0">
-            <img
+            <Image
               src={logoSrc}
               alt="JP Transportes"
+              width={120}
+              height={49}
+              priority
               className="h-9 sm:h-10 w-auto object-contain"
             />
           </a>
@@ -62,11 +60,11 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             <button
               type="button"
-              onClick={() => mounted && setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               aria-label="Alternar tema"
             >
-              {mounted && theme === 'dark' ? (
+              {theme === 'dark' ? (
                 <Sun size={18} className="text-yellow-500 fill-yellow-500" />
               ) : (
                 <Moon size={18} className="text-zinc-600 fill-zinc-600" />
@@ -84,11 +82,11 @@ export default function Navbar() {
           <div className="md:hidden flex items-center gap-2">
             <button
               type="button"
-              onClick={() => mounted && setTheme(theme === 'dark' ? 'light' : 'dark')}
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
               aria-label="Alternar tema"
             >
-              {mounted && theme === 'dark' ? (
+              {theme === 'dark' ? (
                 <Sun size={18} className="text-yellow-500 fill-yellow-500" />
               ) : (
                 <Moon size={18} className="text-zinc-600 fill-zinc-600" />
@@ -123,9 +121,11 @@ export default function Navbar() {
           }`}
         >
           <div className="h-20 px-5 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800">
-            <img
+            <Image
               src={logoSrc}
               alt="JP Transportes"
+              width={108}
+              height={44}
               className="h-9 w-auto object-contain"
             />
 

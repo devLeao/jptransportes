@@ -23,3 +23,90 @@ html, body {
   color: var(--foreground);
   transition: background-color 0.3s ease;
 }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+.hero-animate {
+  animation: hero-reveal 0.85s ease-out both;
+}
+
+.hero-animate:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.hero-animate:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.hero-animate:nth-child(3) {
+  animation-delay: 0.19s;
+}
+
+.hero-animate:nth-child(4) {
+  animation-delay: 0.26s;
+}
+
+.hero-animate:nth-child(5) {
+  animation-delay: 0.33s;
+}
+
+.section-reveal {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.section-reveal .reveal-item {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.section-reveal.is-visible,
+.section-reveal.is-visible .reveal-item {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-reveal.is-visible .reveal-item:nth-child(2) {
+  transition-delay: 0.08s;
+}
+
+.section-reveal.is-visible .reveal-item:nth-child(3) {
+  transition-delay: 0.16s;
+}
+
+@keyframes hero-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hero-animate,
+  .section-reveal,
+  .section-reveal .reveal-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
