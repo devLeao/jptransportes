@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import Image from 'next/image';
 
@@ -428,7 +428,6 @@ export default function Home() {
   const countAnimationRef = useRef<number | null>(null);
   const [activeService, setActiveService] = useState(0);
   const [activePhoto, setActivePhoto] = useState(0);
-  const [yearCount, setYearCount] = useState(2000);
   const [travelCount, setTravelCount] = useState(0);
 
   const currentService = useMemo(() => services[activeService], [activeService]);
@@ -437,8 +436,38 @@ export default function Home() {
     currentServicePhoto.endsWith('.mp4') ||
     currentServicePhoto.endsWith('.webm') ||
     currentServicePhoto.endsWith('.ogg');
-  const travelCountLabel =
-    travelCount >= 10000 ? '+10 mil' : `+${travelCount.toLocaleString('pt-BR')}`;
+  const travelCountLabel = `+${travelCount.toLocaleString('pt-BR')}`;
+
+  const animateTravelCount = useCallback(() => {
+    if (countAnimationRef.current) {
+      cancelAnimationFrame(countAnimationRef.current);
+    }
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reducedMotion) {
+      setTravelCount(10000);
+      return;
+    }
+
+    setTravelCount(0);
+
+    const start = performance.now();
+    const duration = 4200;
+
+    const animateCount = (time: number) => {
+      const progress = Math.min((time - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 4);
+
+      setTravelCount(Math.round(eased * 10000));
+
+      if (progress < 1) {
+        countAnimationRef.current = requestAnimationFrame(animateCount);
+      }
+    };
+
+    countAnimationRef.current = requestAnimationFrame(animateCount);
+  }, []);
 
   useEffect(() => {
     if (!pageRef.current) return;
@@ -454,30 +483,7 @@ export default function Home() {
 
           if (entry.target.id === 'sobre' && !countStartedRef.current) {
             countStartedRef.current = true;
-
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-            if (reducedMotion) {
-              setYearCount(2013);
-              setTravelCount(10000);
-            } else {
-              const start = performance.now() + 250;
-              const duration = 3600;
-
-              const animateCount = (time: number) => {
-                const progress = Math.min(Math.max((time - start) / duration, 0), 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-
-                setYearCount(Math.round(2000 + eased * 13));
-                setTravelCount(Math.round(eased * 10000));
-
-                if (progress < 1) {
-                  countAnimationRef.current = requestAnimationFrame(animateCount);
-                }
-              };
-
-              countAnimationRef.current = requestAnimationFrame(animateCount);
-            }
+            animateTravelCount();
           }
 
           observer.unobserve(entry.target);
@@ -495,7 +501,7 @@ export default function Home() {
         cancelAnimationFrame(countAnimationRef.current);
       }
     };
-  }, []);
+  }, [animateTravelCount]);
 
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -682,55 +688,61 @@ export default function Home() {
               </p>
 
               <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="about-stat relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-white/[0.03]">
-                  <span className="about-stat-line" />
-                  <span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-700/20 bg-red-700/10 text-[11px] font-black text-red-700">
-                    01
-                  </span>
-                  <strong className="block font-mono text-3xl font-black tracking-tight text-zinc-950 tabular-nums dark:text-white">
-                    {yearCount}
+                <div className="about-stat relative border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
+                    Desde 2013
                   </strong>
-                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
-                    Desde
+                  <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
+                    Operando nas estradas
                   </span>
-                  <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
-                    <span className="about-progress about-progress-1" />
-                  </div>
                 </div>
 
-                <div className="about-stat relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-white/[0.03]">
-                  <span className="about-stat-line about-stat-line-delay-1" />
-                  <span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-700/20 bg-red-700/10 text-[11px] font-black text-red-700">
-                    02
-                  </span>
-                  <strong
-                    className="block font-mono text-3xl font-black tracking-tight text-zinc-950 tabular-nums transition-colors duration-300 dark:text-white"
-                    aria-label="Mais de 10 mil viagens feitas"
-                  >
+                <button
+                  type="button"
+                  onClick={animateTravelCount}
+                  onMouseEnter={animateTravelCount}
+                  onFocus={animateTravelCount}
+                  className="about-stat about-trip-counter group relative overflow-hidden rounded-2xl border border-red-700/25 bg-red-700/[0.04] p-5 text-left outline-none transition-colors hover:border-red-700/60 focus-visible:ring-2 focus-visible:ring-red-700 dark:bg-red-700/[0.08]"
+                  aria-label="Mais de dez mil viagens feitas"
+                >
+                  <span className="about-stat-line" />
+                  <strong className="block min-h-[2.35rem] font-mono text-3xl font-black tracking-tight text-zinc-950 tabular-nums dark:text-white">
                     {travelCountLabel}
                   </strong>
-                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
+                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-red-700">
                     Viagens feitas
                   </span>
-                  <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
-                    <span className="about-progress about-progress-2" />
-                  </div>
-                </div>
-
-                <div className="about-stat relative overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 p-5 dark:border-zinc-800 dark:bg-white/[0.03]">
-                  <span className="about-stat-line about-stat-line-delay-2" />
-                  <span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-red-700/20 bg-red-700/10 text-[11px] font-black text-red-700">
-                    03
+                  <span className="mt-5 block h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
+                    <span
+                      className="block h-full rounded-full bg-red-700 transition-[width] duration-300"
+                      style={{ width: `${Math.min(100, travelCount / 100)}%` }}
+                    />
                   </span>
-                  <strong className="block text-3xl font-black tracking-tight text-zinc-950 dark:text-white">
+                </button>
+
+                <div className="about-stat relative border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <div className="mb-3 flex h-10 w-10 items-center justify-center text-red-700">
+                    <svg
+                      viewBox="0 0 64 64"
+                      aria-hidden="true"
+                      className="h-10 w-10"
+                      fill="none"
+                    >
+                      <path
+                        d="M15 23.5 24.5 15l8 3 5.5-4.5 8 6.5 7.5 1.5-2 8.5 4 7-7 4.5-1.5 8.5-10.5-1-5.5 5.5-8-4-8.5.5-3.5-8.5-7-5 5-7.5z"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinejoin="round"
+                      />
+                      <circle cx="33" cy="33" r="4" fill="currentColor" />
+                    </svg>
+                  </div>
+                  <strong className="block text-2xl font-black tracking-tight text-zinc-950 dark:text-white">
                     BH e região
                   </strong>
-                  <span className="mt-2 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
-                    Atendimento
+                  <span className="mt-1 block text-xs font-bold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
+                    Minas Gerais
                   </span>
-                  <div className="mt-5 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
-                    <span className="about-progress about-progress-3" />
-                  </div>
                 </div>
               </div>
             </div>
