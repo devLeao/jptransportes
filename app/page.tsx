@@ -155,7 +155,18 @@ const fleet: FleetVehicle[] = [
     ],
   },
   {
-    name: 'Ônibus Marcopolo DD',
+    name: 'Ônibus Scania',
+    category: 'Rodoviário',
+    capacity: 'Capacidade sob consulta',
+    description:
+      'Ônibus rodoviário para viagens, fretamento e excursões com estrutura confortável para grupos.',
+    photos: [
+      { label: 'Externa', src: '/frota/scania.jpeg' },
+      { label: 'Interna', src: '/frota/scaniainterna.jpeg' },
+    ],
+  },
+  {
+    name: 'Ônibus Comil DD',
     category: 'Double deck',
     capacity: '52 lugares',
     description:
@@ -166,7 +177,7 @@ const fleet: FleetVehicle[] = [
     ],
   },
   {
-    name: 'Ônibus Marcopolo LD',
+    name: 'Ônibus Buscar LD',
     category: 'Low driver',
     capacity: '52 lugares',
     description:
@@ -174,17 +185,6 @@ const fleet: FleetVehicle[] = [
     photos: [
       { label: 'Externa', src: '/frota/ld.jpeg' },
       { label: 'Interna', src: '/frota/internold.jpeg' },
-    ],
-  },
-  {
-    name: 'Comil Campione DD',
-    category: 'Double deck',
-    capacity: '52 lugares',
-    description:
-      'Frota double deck para viagens especiais, turismo e eventos que pedem mais presença e estrutura.',
-    photos: [
-      { label: 'Externa', src: '/frota/dd.jpeg' },
-      { label: 'Interna', src: '/frota/internodd.jpeg' },
     ],
   },
   {
@@ -238,7 +238,7 @@ function FleetCard({ vehicle }: { vehicle: FleetVehicle }) {
   const isVideo = currentPhoto.type === 'video' || currentPhoto.src.endsWith('.mp4');
 
   return (
-    <article className="group h-full overflow-hidden rounded-[22px] border border-white/10 bg-white/95 dark:bg-zinc-950/85 backdrop-blur-sm shadow-xl shadow-black/20 transition-all duration-500 hover:border-white/25 hover:shadow-2xl hover:shadow-black/30">
+    <article className="group h-full overflow-hidden rounded-[18px] border border-white/12 bg-white dark:border-white/10 dark:bg-[#09090b] shadow-xl shadow-black/16 transition-all duration-500 hover:border-white/25 hover:shadow-2xl hover:shadow-black/24">
       <div className="relative h-[300px] sm:h-[360px] lg:h-[430px] overflow-hidden bg-zinc-900">
         {isVideo ? (
           <video
@@ -261,8 +261,6 @@ function FleetCard({ vehicle }: { vehicle: FleetVehicle }) {
             className="h-full w-full object-cover transition-[filter] duration-500 group-hover:brightness-105"
           />
         )}
-
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/35 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
         <div className="absolute top-4 left-4 bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.22em] px-3 py-2 rounded-full shadow-lg shadow-black/20">
           {vehicle.category}
@@ -308,11 +306,52 @@ function FleetCard({ vehicle }: { vehicle: FleetVehicle }) {
 
 function FleetCarousel() {
   const carouselRef = useRef<HTMLDivElement | null>(null);
+  const scrollFrame = useRef(0);
+  const [activeIndex, setActiveIndex] = useState(0);
   const dragState = useRef({
     isDragging: false,
     startX: 0,
     scrollLeft: 0,
   });
+
+  const updateActiveCard = () => {
+    const carousel = carouselRef.current;
+
+    if (!carousel) return;
+
+    const carouselCenter = carousel.getBoundingClientRect().left + carousel.clientWidth / 2;
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    Array.from(carousel.children).forEach((child, index) => {
+      const rect = child.getBoundingClientRect();
+      const childCenter = rect.left + rect.width / 2;
+      const distance = Math.abs(carouselCenter - childCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    setActiveIndex(closestIndex);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (scrollFrame.current) {
+        cancelAnimationFrame(scrollFrame.current);
+      }
+    };
+  }, []);
+
+  const handleCarouselScroll = () => {
+    if (scrollFrame.current) {
+      cancelAnimationFrame(scrollFrame.current);
+    }
+
+    scrollFrame.current = requestAnimationFrame(updateActiveCard);
+  };
 
   const scrollFleet = (direction: 'prev' | 'next') => {
     const carousel = carouselRef.current;
@@ -369,8 +408,8 @@ function FleetCarousel() {
 
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-[#5a0f16] to-transparent dark:from-zinc-950 md:w-20" />
-      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-[#2a0609] to-transparent dark:from-black md:w-20" />
+      <div className="pointer-events-none absolute left-0 top-0 z-10 h-[calc(100%-3rem)] w-10 bg-gradient-to-r from-[#7a1018] via-[#7a1018]/45 to-transparent dark:from-[#120507] dark:via-[#120507]/55 md:w-16" />
+      <div className="pointer-events-none absolute right-0 top-0 z-10 h-[calc(100%-3rem)] w-10 bg-gradient-to-l from-[#7a1018] via-[#7a1018]/45 to-transparent dark:from-[#120507] dark:via-[#120507]/55 md:w-16" />
 
       <button
         type="button"
@@ -401,12 +440,17 @@ function FleetCarousel() {
             endDrag(event);
           }
         }}
+        onScroll={handleCarouselScroll}
         className="fleet-carousel flex cursor-grab snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-6 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
-        {fleet.map((vehicle) => (
+        {fleet.map((vehicle, index) => (
           <div
             key={vehicle.name}
-            className="min-w-[82vw] snap-center sm:min-w-[460px] lg:min-w-[540px] xl:min-w-[600px]"
+            className={`min-w-[82vw] snap-center sm:min-w-[460px] lg:min-w-[540px] xl:min-w-[600px] transition-all duration-700 ease-out ${
+              activeIndex === index
+                ? 'scale-100'
+                : 'scale-[0.97]'
+            }`}
           >
             <FleetCard vehicle={vehicle} />
           </div>
@@ -456,63 +500,6 @@ export default function Home() {
 
     return () => {
       observer.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const touchPrimary = window.matchMedia('(pointer: coarse)').matches;
-
-    if (reducedMotion || touchPrimary) return;
-
-    let currentY = window.scrollY;
-    let targetY = window.scrollY;
-    let animationFrame = 0;
-
-    const maxScroll = () =>
-      Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-
-    const syncScrollPosition = () => {
-      if (!animationFrame) {
-        currentY = window.scrollY;
-        targetY = window.scrollY;
-      }
-    };
-
-    const animateScroll = () => {
-      currentY += (targetY - currentY) * 0.075;
-      window.scrollTo(0, currentY);
-
-      if (Math.abs(targetY - currentY) > 0.4) {
-        animationFrame = requestAnimationFrame(animateScroll);
-      } else {
-        currentY = targetY;
-        animationFrame = 0;
-      }
-    };
-
-    const handleWheel = (event: WheelEvent) => {
-      if (event.ctrlKey) return;
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
-
-      event.preventDefault();
-      targetY = Math.min(maxScroll(), Math.max(0, targetY + event.deltaY * 0.68));
-
-      if (!animationFrame) {
-        animationFrame = requestAnimationFrame(animateScroll);
-      }
-    };
-
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    window.addEventListener('scroll', syncScrollPosition, { passive: true });
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel);
-      window.removeEventListener('scroll', syncScrollPosition);
-
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-      }
     };
   }, []);
 
@@ -646,7 +633,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
-            <div className="reveal-item group relative overflow-hidden rounded-[22px] border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-red-700 hover:bg-white hover:shadow-2xl hover:shadow-zinc-950/10 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80">
+            <div className="reveal-item scroll-lift group relative overflow-hidden rounded-[22px] border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-red-700 hover:bg-white hover:shadow-2xl hover:shadow-zinc-950/10 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80">
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-700 via-red-500 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <div className="mb-8 inline-grid h-14 w-14 place-items-center rounded-2xl border border-zinc-200 bg-white text-red-700 shadow-sm transition-colors duration-500 group-hover:border-red-700 group-hover:bg-red-700 group-hover:text-white dark:border-zinc-800 dark:bg-zinc-950">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="9" y1="22" x2="9" y2="2"></line><line x1="15" y1="22" x2="15" y2="2"></line></svg>
@@ -659,7 +646,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="reveal-item group relative overflow-hidden rounded-[22px] border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-red-700 hover:bg-white hover:shadow-2xl hover:shadow-zinc-950/10 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80">
+            <div className="reveal-item scroll-lift group relative overflow-hidden rounded-[22px] border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-red-700 hover:bg-white hover:shadow-2xl hover:shadow-zinc-950/10 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80">
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-700 via-red-500 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <div className="mb-8 inline-grid h-14 w-14 place-items-center rounded-2xl border border-zinc-200 bg-white text-red-700 shadow-sm transition-colors duration-500 group-hover:border-red-700 group-hover:bg-red-700 group-hover:text-white dark:border-zinc-800 dark:bg-zinc-950">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
@@ -672,7 +659,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="reveal-item group relative overflow-hidden rounded-[22px] border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-red-700 hover:bg-white hover:shadow-2xl hover:shadow-zinc-950/10 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80">
+            <div className="reveal-item scroll-lift group relative overflow-hidden rounded-[22px] border border-zinc-200 bg-zinc-50/80 p-6 shadow-sm transition-all duration-500 hover:-translate-y-1 hover:border-red-700 hover:bg-white hover:shadow-2xl hover:shadow-zinc-950/10 dark:border-zinc-800 dark:bg-zinc-900/40 dark:hover:bg-zinc-900/80">
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-700 via-red-500 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
               <div className="mb-8 inline-grid h-14 w-14 place-items-center rounded-2xl border border-zinc-200 bg-white text-red-700 shadow-sm transition-colors duration-500 group-hover:border-red-700 group-hover:bg-red-700 group-hover:text-white dark:border-zinc-800 dark:bg-zinc-950">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"></path></svg>
@@ -847,10 +834,10 @@ export default function Home() {
 
       <section
         id="frota"
-        className="section-reveal relative py-20 md:py-28 overflow-hidden bg-gradient-to-br from-[#5a0f16] via-[#7b1118] to-[#2a0609] dark:from-zinc-950 dark:via-[#22060a] dark:to-black"
+        className="section-reveal relative py-20 md:py-28 overflow-hidden bg-[#7a1018] dark:bg-[#120507]"
       >
-        <div className="absolute top-0 left-0 w-[40%] h-[40%] bg-white/5 dark:bg-red-700/10 blur-[160px] rounded-full" />
-        <div className="absolute bottom-0 right-0 w-[35%] h-[35%] bg-black/25 blur-[140px] rounded-full" />
+        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0)_28%,rgba(0,0,0,0.12)_100%)] dark:bg-[linear-gradient(135deg,rgba(185,28,28,0.22)_0%,rgba(24,24,27,0.25)_42%,rgba(8,3,4,0.6)_100%)] pointer-events-none" />
 
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12 md:mb-14">
@@ -874,9 +861,27 @@ export default function Home() {
 
       <section
         id="contato"
-        className="section-reveal relative py-20 md:py-28 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800"
+        className="section-reveal relative py-20 md:py-28 overflow-hidden bg-white dark:bg-[#100607] border-t border-zinc-200 dark:border-red-950/60"
       >
-        <div className="container mx-auto px-4 sm:px-6">
+        <div className="contact-particles pointer-events-none absolute inset-0 opacity-60 dark:opacity-100">
+          <span className="particle-up" style={{ left: '5%' }} />
+          <span className="particle-left" style={{ left: '12%' }} />
+          <span className="particle-right" style={{ left: '18%' }} />
+          <span className="particle-sway" style={{ left: '24%' }} />
+          <span className="particle-up" style={{ left: '31%' }} />
+          <span className="particle-right" style={{ left: '38%' }} />
+          <span className="particle-left" style={{ left: '45%' }} />
+          <span className="particle-sway" style={{ left: '52%' }} />
+          <span className="particle-up" style={{ left: '59%' }} />
+          <span className="particle-left" style={{ left: '66%' }} />
+          <span className="particle-right" style={{ left: '73%' }} />
+          <span className="particle-sway" style={{ left: '80%' }} />
+          <span className="particle-up" style={{ left: '87%' }} />
+          <span className="particle-left" style={{ left: '93%' }} />
+        </div>
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-red-900/10 to-transparent dark:from-red-700/15 pointer-events-none" />
+
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-[0.88fr_1.12fr] gap-8 md:gap-10 items-start">
             <div className="max-w-2xl">
               <h2 className="text-sm font-black text-red-700 uppercase tracking-[0.3em] mb-4">
@@ -890,7 +895,7 @@ export default function Home() {
               </p>
 
               <div className="mt-8 md:mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 bg-zinc-50 dark:bg-zinc-900/40">
+                <div className="rounded-2xl border border-zinc-200 dark:border-red-900/35 p-5 bg-zinc-50 dark:bg-red-950/15 dark:shadow-lg dark:shadow-red-950/15">
                   <p className="text-[11px] font-black uppercase tracking-[0.25em] text-red-700 mb-2">
                     Atendimento
                   </p>
@@ -899,7 +904,7 @@ export default function Home() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 bg-zinc-50 dark:bg-zinc-900/40">
+                <div className="rounded-2xl border border-zinc-200 dark:border-red-900/35 p-5 bg-zinc-50 dark:bg-red-950/15 dark:shadow-lg dark:shadow-red-950/15">
                   <p className="text-[11px] font-black uppercase tracking-[0.25em] text-red-700 mb-2">
                     Cobertura
                   </p>
@@ -910,7 +915,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-5 sm:p-6 md:p-8 shadow-sm">
+            <div className="rounded-[28px] border border-zinc-200 dark:border-red-900/40 bg-zinc-50 dark:bg-zinc-950/70 p-5 sm:p-6 md:p-8 shadow-sm dark:shadow-2xl dark:shadow-red-950/20">
               <form className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 <div className="md:col-span-1">
                   <label htmlFor="name" className="block text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2">
@@ -931,7 +936,7 @@ export default function Home() {
                   <input
                     id="phone"
                     type="text"
-                    placeholder="(31) 99999-9999"
+                    placeholder="(31) 99735-2250"
                     className="w-full h-14 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none focus:border-red-700 transition-colors"
                   />
                 </div>
@@ -984,7 +989,9 @@ export default function Home() {
                   </button>
 
                   <a
-                    href="#"
+                    href="https://wa.me/55319973522505"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="w-full sm:w-auto inline-flex items-center justify-center border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white px-8 py-4 rounded-xl md:rounded-sm uppercase text-[11px] tracking-widest font-bold hover:border-red-700 transition-colors"
                   >
                     Falar no WhatsApp
@@ -1043,9 +1050,17 @@ export default function Home() {
               </h4>
               <div className="space-y-3 text-sm text-white/70">
                 <p>JP Transportes e Viagens</p>
-                <p>Vespasiano - MG</p>
-                <p>(31) 99999-9999</p>
-                <p>contato@jptransportes.com.br</p>
+                <p>Rua Caracas, 80 - Suely, Vespasiano - MG</p>
+                <p>
+                  <a href="https://wa.me/55319973522505" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    (31) 99735-2250
+                  </a>
+                </p>
+                <p>
+                  <a href="mailto:jptransporteseviagens@gmail.com" className="hover:text-white transition-colors">
+                    jptransporteseviagens@gmail.com
+                  </a>
+                </p>
               </div>
             </div>
           </div>
