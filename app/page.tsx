@@ -1,8 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import type { FormEvent, PointerEvent as ReactPointerEvent } from 'react';
 import Image from 'next/image';
+
+const whatsappNumber = '5531973522505';
+const whatsappDisplay = '(31) 97352-2505';
 
 const services = [
   {
@@ -523,6 +526,32 @@ export default function Home() {
     setActivePhoto(0);
   };
 
+  const handleQuoteSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const name = String(formData.get('name') ?? '').trim();
+    const email = String(formData.get('email') ?? '').trim();
+    const service = String(formData.get('service') ?? '').trim();
+    const message = String(formData.get('message') ?? '').trim();
+
+    const whatsappMessage = [
+      'Olá, gostaria de solicitar um orçamento com a JP Transportes e Viagens.',
+      name && `Nome: ${name}`,
+      email && `E-mail: ${email}`,
+      service && `Serviço desejado: ${service}`,
+      message && `Mensagem: ${message}`,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
+
   return (
     <div
       ref={pageRef}
@@ -916,13 +945,14 @@ export default function Home() {
             </div>
 
             <div className="rounded-[28px] border border-zinc-200 dark:border-red-900/40 bg-zinc-50 dark:bg-zinc-950/70 p-5 sm:p-6 md:p-8 shadow-sm dark:shadow-2xl dark:shadow-red-950/20">
-              <form className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+              <form onSubmit={handleQuoteSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                 <div className="md:col-span-1">
                   <label htmlFor="name" className="block text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2">
                     Nome
                   </label>
                   <input
                     id="name"
+                    name="name"
                     type="text"
                     placeholder="Seu nome"
                     className="w-full h-14 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none focus:border-red-700 transition-colors"
@@ -930,23 +960,12 @@ export default function Home() {
                 </div>
 
                 <div className="md:col-span-1">
-                  <label htmlFor="phone" className="block text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2">
-                    Telefone
-                  </label>
-                  <input
-                    id="phone"
-                    type="text"
-                    placeholder="(31) 99735-2250"
-                    className="w-full h-14 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none focus:border-red-700 transition-colors"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
                   <label htmlFor="email" className="block text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2">
                     E-mail
                   </label>
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="seuemail@gmail.com"
                     className="w-full h-14 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none focus:border-red-700 transition-colors"
@@ -957,14 +976,14 @@ export default function Home() {
                   <label htmlFor="service" className="block text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400 mb-2">
                     Serviço desejado
                   </label>
-                  <select id="service" className="w-full h-14 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none focus:border-red-700 transition-colors">
-                    <option>Selecione um serviço</option>
-                    <option>Locação de Vans e Ônibus</option>
-                    <option>Excursões e Passeios</option>
-                    <option>Transfer para Aeroportos</option>
-                    <option>Eventos e Viagens em Grupo</option>
-                    <option>Transporte Escolar/Empresarial</option>
-                    <option>Transporte Executivo</option>
+                  <select id="service" name="service" defaultValue="" className="w-full h-14 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none focus:border-red-700 transition-colors">
+                    <option value="">Selecione um serviço</option>
+                    <option value="Locação de Vans e Ônibus">Locação de Vans e Ônibus</option>
+                    <option value="Excursões e Passeios">Excursões e Passeios</option>
+                    <option value="Transfer para Aeroportos">Transfer para Aeroportos</option>
+                    <option value="Eventos e Viagens em Grupo">Eventos e Viagens em Grupo</option>
+                    <option value="Transporte Escolar/Empresarial">Transporte Escolar/Empresarial</option>
+                    <option value="Transporte Executivo">Transporte Executivo</option>
                   </select>
                 </div>
 
@@ -974,28 +993,20 @@ export default function Home() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     rows={6}
                     placeholder="Descreva sua necessidade..."
                     className="w-full px-4 py-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white outline-none focus:border-red-700 transition-colors resize-none"
                   />
                 </div>
 
-                <div className="md:col-span-2 flex flex-col sm:flex-row gap-3 md:gap-4 pt-2">
+                <div className="md:col-span-2 flex pt-2">
                   <button
                     type="submit"
                     className="w-full sm:w-auto inline-flex items-center justify-center bg-red-700 hover:bg-red-800 text-white font-bold px-8 py-4 rounded-xl md:rounded-sm transition-all shadow-xl uppercase text-[11px] tracking-widest active:scale-95"
                   >
-                    Enviar solicitação
+                    Chamar no WhatsApp
                   </button>
-
-                  <a
-                    href="https://wa.me/55319973522505"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full sm:w-auto inline-flex items-center justify-center border border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-white px-8 py-4 rounded-xl md:rounded-sm uppercase text-[11px] tracking-widest font-bold hover:border-red-700 transition-colors"
-                  >
-                    Falar no WhatsApp
-                  </a>
                 </div>
               </form>
             </div>
@@ -1052,8 +1063,8 @@ export default function Home() {
                 <p>JP Transportes e Viagens</p>
                 <p>Rua Caracas, 80 - Suely, Vespasiano - MG</p>
                 <p>
-                  <a href="https://wa.me/55319973522505" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-                    (31) 99735-2250
+                  <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    {whatsappDisplay}
                   </a>
                 </p>
                 <p>
