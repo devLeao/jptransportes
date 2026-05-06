@@ -137,7 +137,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Ônibus preto Mercedes',
     category: 'Rodoviário',
-    capacity: '55 lugares',
+    capacity: '46 lugares',
     description:
       'Ônibus executivo para viagens, excursões e fretamento de grupos grandes com conforto e segurança.',
     photos: [
