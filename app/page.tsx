@@ -89,7 +89,6 @@ const services = [
       'Operações recorrentes com foco em confiança, segurança e compromisso com horários para empresas e instituições.',
     photos: [
       '/servicos/escolar-1.mp4',
-      '/servicos/escolar-2.jpg',
       '/servicos/escolar-3.jpg',
     ],
     items: [
@@ -160,7 +159,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Ônibus Scania',
     category: 'Rodoviário',
-    capacity: 'Capacidade sob consulta',
+    capacity: '46 lugares',
     description:
       'Ônibus rodoviário para viagens, fretamento e excursões com estrutura confortável para grupos.',
     photos: [
@@ -171,7 +170,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Ônibus Comil DD',
     category: 'Double deck',
-    capacity: '52 lugares',
+    capacity: '60 lugares',
     description:
       'Modelo double deck indicado para viagens de longa distância, turismo e operações premium em grupo.',
     photos: [
@@ -182,7 +181,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Ônibus Buscar LD',
     category: 'Low driver',
-    capacity: '52 lugares',
+    capacity: '44 lugares',
     description:
       'Opção rodoviária confortável para excursões, fretamento e deslocamentos planejados com alta capacidade.',
     photos: [
@@ -193,7 +192,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Van 313 Mercedes',
     category: 'Van executiva',
-    capacity: '25 lugares',
+    capacity: '15 lugares',
     description:
       'Van versátil para transfers, eventos, empresas e grupos menores que precisam de agilidade.',
     photos: [
@@ -203,7 +202,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Van 415 Mercedes',
     category: 'Van executiva',
-    capacity: '28 lugares',
+    capacity: '15 lugares',
     description:
       'Ideal para grupos médios, transporte empresarial, passeios e deslocamentos com mais flexibilidade.',
     photos: [
@@ -214,7 +213,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Van 515 Mercedes',
     category: 'Van executiva',
-    capacity: '32 lugares',
+    capacity: '17 lugares',
     description:
       'Van de maior capacidade para operações em grupo, fretamento e viagens curtas com conforto.',
     photos: [
@@ -225,7 +224,7 @@ const fleet: FleetVehicle[] = [
   {
     name: 'Carro privado',
     category: 'Executivo',
-    capacity: 'Até 4 passageiros',
+    capacity: '7 lugares',
     description:
       'Atendimento privativo para executivos, aeroportos e deslocamentos discretos com mais conforto.',
     photos: [
