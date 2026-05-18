@@ -35,6 +35,28 @@ export default function RootLayout({
             gtag('config', 'AW-18079653881');
           `}
         </Script>
+        <Script id="google-ads-conversion" strategy="afterInteractive">
+          {`
+            function gtag_report_conversion(url) {
+              var called = false;
+              var callback = function () {
+                if (called) {
+                  return;
+                }
+                called = true;
+                if (typeof(url) != 'undefined') {
+                  window.location = url;
+                }
+              };
+              gtag('event', 'conversion', {
+                'send_to': 'AW-18079653881/llv4CMfG-K4cEPm_hq1D',
+                'event_callback': callback
+              });
+              setTimeout(callback, 1000);
+              return false;
+            }
+          `}
+        </Script>
         <Providers>
           <Navbar />
           <main className="pt-20 min-h-screen bg-white dark:bg-black text-zinc-950 dark:text-zinc-50 transition-colors duration-500">

@@ -7,6 +7,12 @@ import Image from 'next/image';
 const whatsappNumber = '5531973522505';
 const whatsappDisplay = '(31) 97352-2505';
 
+declare global {
+  interface Window {
+    gtag_report_conversion?: (url?: string) => false;
+  }
+}
+
 const services = [
   {
     id: '01',
@@ -544,11 +550,14 @@ export default function Home() {
       .filter(Boolean)
       .join('\n');
 
-    window.open(
-      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+
+    if (typeof window.gtag_report_conversion === 'function') {
+      window.gtag_report_conversion(whatsappUrl);
+      return;
+    }
+
+    window.location.href = whatsappUrl;
   };
 
   return (
