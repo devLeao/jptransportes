@@ -185,6 +185,17 @@ const fleet: FleetVehicle[] = [
     ],
   },
   {
+    name: 'Double Decker panorâmico',
+    category: 'Double deck',
+    capacity: '55 lugares semi leito',
+    description:
+      'Ônibus panorâmico com tomadas, banheiro, ar condicionado, geladeira e cafeteira para viagens com conforto e segurança.',
+    photos: [
+      { label: 'Externa', src: '/frota/DoubleDeckerpanorâmico.jpeg' },
+      { label: 'Interna', src: '/frota/DoubleDeckerpanorâmicointerno.jpeg' },
+    ],
+  },
+  {
     name: 'Ônibus Buscar LD',
     category: 'Low driver',
     capacity: '44 lugares',
@@ -315,6 +326,7 @@ function FleetCard({ vehicle }: { vehicle: FleetVehicle }) {
 function FleetCarousel() {
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const scrollFrame = useRef(0);
+  const animationFrame = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const dragState = useRef({
     isDragging: false,
@@ -322,10 +334,10 @@ function FleetCarousel() {
     scrollLeft: 0,
   });
 
-  const updateActiveCard = () => {
+  const getClosestCardIndex = () => {
     const carousel = carouselRef.current;
 
-    if (!carousel) return;
+    if (!carousel) return activeIndex;
 
     const carouselCenter = carousel.getBoundingClientRect().left + carousel.clientWidth / 2;
     let closestIndex = 0;
@@ -342,13 +354,21 @@ function FleetCarousel() {
       }
     });
 
-    setActiveIndex(closestIndex);
+    return closestIndex;
+  };
+
+  const updateActiveCard = () => {
+    setActiveIndex(getClosestCardIndex());
   };
 
   useEffect(() => {
     return () => {
       if (scrollFrame.current) {
         cancelAnimationFrame(scrollFrame.current);
+      }
+
+      if (animationFrame.current) {
+        cancelAnimationFrame(animationFrame.current);
       }
     };
   }, []);
@@ -361,16 +381,54 @@ function FleetCarousel() {
     scrollFrame.current = requestAnimationFrame(updateActiveCard);
   };
 
-  const scrollFleet = (direction: 'prev' | 'next') => {
+  const animateCarouselTo = (target: number) => {
     const carousel = carouselRef.current;
 
     if (!carousel) return;
 
-    const cardWidth = carousel.querySelector('article')?.clientWidth ?? 360;
-    carousel.scrollBy({
-      left: direction === 'next' ? cardWidth + 24 : -(cardWidth + 24),
-      behavior: 'smooth',
-    });
+    if (animationFrame.current) {
+      cancelAnimationFrame(animationFrame.current);
+    }
+
+    const start = carousel.scrollLeft;
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+    const end = Math.max(0, Math.min(target, maxScroll));
+    const distance = end - start;
+    const duration = 720;
+    const startTime = performance.now();
+    const easeOutQuart = (progress: number) => 1 - Math.pow(1 - progress, 4);
+
+    const step = (time: number) => {
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      carousel.scrollLeft = start + distance * easeOutQuart(progress);
+
+      if (progress < 1) {
+        animationFrame.current = requestAnimationFrame(step);
+      }
+    };
+
+    animationFrame.current = requestAnimationFrame(step);
+  };
+
+  const getCardOffset = (index: number) => {
+    const carousel = carouselRef.current;
+    const card = carousel?.children[index] as HTMLElement | undefined;
+
+    if (!carousel || !card) return 0;
+
+    return card.offsetLeft - (carousel.clientWidth - card.clientWidth) / 2;
+  };
+
+  const scrollFleet = (direction: 'prev' | 'next') => {
+    const nextIndex =
+      direction === 'next'
+        ? Math.min(activeIndex + 1, fleet.length - 1)
+        : Math.max(activeIndex - 1, 0);
+
+    animateCarouselTo(getCardOffset(nextIndex));
+    setActiveIndex(nextIndex);
   };
 
   const startDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -389,6 +447,10 @@ function FleetCarousel() {
       startX: event.clientX,
       scrollLeft: carousel.scrollLeft,
     };
+
+    if (animationFrame.current) {
+      cancelAnimationFrame(animationFrame.current);
+    }
 
     carousel.setPointerCapture(event.pointerId);
     carousel.classList.add('cursor-grabbing');
@@ -412,17 +474,21 @@ function FleetCarousel() {
     dragState.current.isDragging = false;
     carousel.releasePointerCapture(event.pointerId);
     carousel.classList.remove('cursor-grabbing');
+
+    const closestIndex = getClosestCardIndex();
+    setActiveIndex(closestIndex);
+    animateCarouselTo(getCardOffset(closestIndex));
   };
 
   return (
     <div className="relative">
-      <div className="pointer-events-none absolute left-0 top-0 z-10 h-[calc(100%-3rem)] w-10 bg-gradient-to-r from-[#7a1018] via-[#7a1018]/45 to-transparent dark:from-[#120507] dark:via-[#120507]/55 md:w-16" />
-      <div className="pointer-events-none absolute right-0 top-0 z-10 h-[calc(100%-3rem)] w-10 bg-gradient-to-l from-[#7a1018] via-[#7a1018]/45 to-transparent dark:from-[#120507] dark:via-[#120507]/55 md:w-16" />
+      <div className="pointer-events-none absolute left-0 top-0 z-10 h-[calc(100%-3rem)] w-10 bg-gradient-to-r from-zinc-50 via-zinc-50/80 to-transparent dark:from-[#120507] dark:via-[#120507]/55 md:w-16" />
+      <div className="pointer-events-none absolute right-0 top-0 z-10 h-[calc(100%-3rem)] w-10 bg-gradient-to-l from-zinc-50 via-zinc-50/80 to-transparent dark:from-[#120507] dark:via-[#120507]/55 md:w-16" />
 
       <button
         type="button"
         onClick={() => scrollFleet('prev')}
-        className="absolute left-2 top-[42%] z-20 hidden h-16 w-16 -translate-y-1/2 place-items-center rounded-full border border-white/50 bg-white text-3xl font-black text-zinc-950 shadow-2xl shadow-black/30 transition-all hover:scale-105 hover:bg-red-700 hover:text-white md:grid xl:-left-8"
+        className="absolute left-2 top-[42%] z-20 hidden h-14 w-14 -translate-y-1/2 place-items-center rounded-full border border-zinc-200 bg-white/95 text-zinc-950 shadow-xl shadow-zinc-950/15 backdrop-blur transition-all duration-300 hover:-translate-x-0.5 hover:border-red-700 hover:bg-red-700 hover:text-white dark:border-white/15 dark:bg-white/90 md:grid xl:-left-7"
         aria-label="Ver veículo anterior"
       >
         ←
@@ -431,7 +497,7 @@ function FleetCarousel() {
       <button
         type="button"
         onClick={() => scrollFleet('next')}
-        className="absolute right-2 top-[42%] z-20 hidden h-16 w-16 -translate-y-1/2 place-items-center rounded-full border border-white/50 bg-white text-3xl font-black text-zinc-950 shadow-2xl shadow-black/30 transition-all hover:scale-105 hover:bg-red-700 hover:text-white md:grid xl:-right-8"
+        className="absolute right-2 top-[42%] z-20 hidden h-14 w-14 -translate-y-1/2 place-items-center rounded-full border border-zinc-200 bg-white/95 text-zinc-950 shadow-xl shadow-zinc-950/15 backdrop-blur transition-all duration-300 hover:translate-x-0.5 hover:border-red-700 hover:bg-red-700 hover:text-white dark:border-white/15 dark:bg-white/90 md:grid xl:-right-7"
         aria-label="Ver próximo veículo"
       >
         →
@@ -449,15 +515,15 @@ function FleetCarousel() {
           }
         }}
         onScroll={handleCarouselScroll}
-        className="fleet-carousel flex cursor-grab snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-6 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        className="fleet-carousel flex cursor-grab snap-x snap-mandatory gap-5 overflow-x-auto pb-6 select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         {fleet.map((vehicle, index) => (
           <div
             key={vehicle.name}
-            className={`min-w-[82vw] snap-center sm:min-w-[460px] lg:min-w-[540px] xl:min-w-[600px] transition-all duration-700 ease-out ${
+            className={`min-w-[82vw] snap-center sm:min-w-[460px] lg:min-w-[540px] xl:min-w-[600px] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               activeIndex === index
-                ? 'scale-100'
-                : 'scale-[0.97]'
+                ? 'scale-100 opacity-100'
+                : 'scale-[0.965] opacity-70'
             }`}
           >
             <FleetCard vehicle={vehicle} />
@@ -466,7 +532,7 @@ function FleetCarousel() {
       </div>
 
       <div className="mt-4 flex items-center justify-center md:justify-start">
-        <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/65">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500 dark:text-white/65">
           Arraste para ver a frota completa
         </p>
       </div>
@@ -871,23 +937,23 @@ export default function Home() {
 
       <section
         id="frota"
-        className="section-reveal relative py-20 md:py-28 overflow-hidden bg-[#7a1018] dark:bg-[#120507]"
+        className="section-reveal relative py-20 md:py-28 overflow-hidden bg-zinc-50 dark:bg-[#120507]"
       >
-        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0)_28%,rgba(0,0,0,0.12)_100%)] dark:bg-[linear-gradient(135deg,rgba(185,28,28,0.22)_0%,rgba(24,24,27,0.25)_42%,rgba(8,3,4,0.6)_100%)] pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-300 to-transparent dark:via-white/15" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(185,28,28,0.10),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(244,244,245,0.85)_100%)] dark:bg-[linear-gradient(135deg,rgba(185,28,28,0.22)_0%,rgba(24,24,27,0.25)_42%,rgba(8,3,4,0.6)_100%)] pointer-events-none" />
 
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-12 md:mb-14">
             <div className="max-w-2xl">
-              <h2 className="text-sm font-black text-white uppercase tracking-[0.3em] mb-4">
+              <h2 className="text-sm font-black text-red-700 dark:text-white uppercase tracking-[0.3em] mb-4">
                 Frota
               </h2>
-              <h3 className="text-3xl sm:text-5xl md:text-6xl font-black text-white uppercase tracking-tighter leading-[0.95]">
+              <h3 className="text-3xl sm:text-5xl md:text-6xl font-black text-zinc-950 dark:text-white uppercase tracking-tighter leading-[0.95]">
                 Veículos disponíveis para cada necessidade
               </h3>
             </div>
 
-            <p className="max-w-md text-white/80 text-sm md:text-base leading-relaxed font-medium border-l-2 border-white pl-5">
+            <p className="max-w-md text-zinc-600 dark:text-white/80 text-sm md:text-base leading-relaxed font-medium border-l-2 border-red-700 dark:border-white pl-5">
               Uma apresentação mais forte da estrutura da empresa para reforçar segurança, confiança e capacidade de atendimento.
             </p>
           </div>

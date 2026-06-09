@@ -33,17 +33,6 @@ section[id] {
   scroll-margin-top: 5rem;
 }
 
-@media (min-width: 768px) {
-  html {
-    scroll-snap-type: y proximity;
-  }
-
-  section[id] {
-    scroll-snap-align: start;
-    scroll-snap-stop: normal;
-  }
-}
-
 .hero-animate {
   animation: hero-reveal 0.85s ease-out both;
 }
@@ -70,14 +59,14 @@ section[id] {
 
 .section-reveal {
   opacity: 0;
-  transform: translateY(48px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(34px);
+  transition: opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1), transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .section-reveal .reveal-item {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transform: translateY(22px);
+  transition: opacity 0.82s cubic-bezier(0.22, 1, 0.36, 1), transform 0.82s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .section-reveal.is-visible,
@@ -96,6 +85,11 @@ section[id] {
 
 .section-reveal.is-visible .scroll-lift {
   animation: scroll-card-lift 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fleet-carousel {
+  overscroll-behavior-x: contain;
+  scroll-behavior: auto;
 }
 
 .contact-particles span {
